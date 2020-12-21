@@ -8,7 +8,7 @@ public class Piece extends StackPane {
 
 
     private static final int TILE_SIZE = 65;
-    private PieceType type;
+    public PieceType type;
 
     private double mouseX, mouseY;
     private double oldX, oldY;

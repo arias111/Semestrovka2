@@ -11,8 +11,6 @@ class ServerSomthing extends Thread {
     private Socket socket; // сокет, через который сервер общается с клиентом,
     private BufferedReader in; // поток чтения из сокета
     private BufferedWriter out; // поток завписи в сокет
-    private Checkers checkers;
-    private PieceType pieceType;
 
     /**
      * для общения с клиентом необходим сокет (адресные данные)
@@ -20,10 +18,8 @@ class ServerSomthing extends Thread {
      * @throws IOException
      */
 
-    public ServerSomthing(Socket socket, Checkers checkers, PieceType pieceType) throws IOException {
-        this.checkers = checkers;
+    public ServerSomthing(Socket socket) throws IOException {
         this.socket = socket;
-        this.pieceType = pieceType;
         // если потоку ввода/вывода приведут к генерированию искдючения, оно проброситься дальше
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -37,13 +33,16 @@ class ServerSomthing extends Thread {
             // первое сообщение отправленное сюда - это никнейм
             word = in.readLine();
             try {
-                out.write(word + "\n");
+                System.out.println("connected: " + word);
+                out.write("2"+word +" connect" + "\n");
                 out.flush(); // flush() нужен для выталкивания оставшихся данных
                 // если такие есть, и очистки потока для дьнейших нужд
             } catch (IOException ignored) {}
             try {
                 while (true) {
+                    System.out.println("Cicle start");
                     word = in.readLine();
+                    System.out.println("Server cicle: " + word);
                     if(word.equals("stop")) {
                         this.downService(); // харакири
                         break; // если пришла пустая строка - выходим из цикла прослушки
@@ -65,10 +64,12 @@ class ServerSomthing extends Thread {
      * отсылка одного сообщения клиенту по указанному потоку
      * @param msg
      */
-    private void send(String msg) {
+    public void send(String msg) {
+        System.out.println("Send in server: "+msg);
         try {
             out.write(msg + "\n");
             out.flush();
+            System.out.println("Flush data");
         } catch (IOException ignored) {}
 
     }

@@ -4,15 +4,17 @@ import Game.Piece;
 import Game.PieceType;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Server {
 
-    public static final int PORT = 8080;
+    public static final int PORT = 10000;
     public static LinkedList<ServerSomthing> serverList = new LinkedList<>(); // список всех нитей - экземпляров
-
+    static private boolean gameStarted = false;
 
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(PORT);
@@ -20,10 +22,26 @@ public class Server {
         try {
             while (true) {
                 // Блокируется до возникновения нового соединения:
-                Checkers checkers = new Checkers();
                 Socket socket = server.accept();
                 try {
-                    serverList.add(new ServerSomthing(socket,checkers,PieceType.BLACK)); // добавить новое соединенние в список
+                    if(serverList.size() <=1) {
+                        serverList.add(new ServerSomthing(socket));
+                        System.out.println("Get new connection");
+                        if(serverList.size() == 2){
+                            if(!gameStarted){
+                                System.out.println("StartGame");
+                                gameStarted = true;
+                                Iterator<ServerSomthing> listIter = serverList.iterator();
+                                listIter.next().send("0Black");
+                                listIter.next().send("0White");
+                            }
+                        }
+                    }// добавить новое соединенние в список
+                    else{
+                        PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
+                        printWriter.println("Переполнение");
+                        printWriter.flush();
+                    }
                 } catch (IOException e) {
                     // Если завершится неудачей, закрывается сокет,
                     // в противном случае, нить закроет его:

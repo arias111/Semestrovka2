@@ -12,34 +12,63 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 public class Checkers extends Application {
 
     public static final int TILE_SIZE = 65;
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
-    private String name;
     private ListView listView = new ListView();
     private TextField textField = new TextField();
-    private TextField textField1 = new TextField();
-    private TextField textField2 = new TextField();
-    private Button button = new Button();
-    private Button button1 = new Button();
-    private Label label = new Label();
-    private Label nameLabel = new Label();
-    private Label label2 = new Label();
+    private TextField nameTextField = new TextField();
+    private TextField connectionTextField = new TextField();
+    private Button sendMessageButton = new Button();
+    private Button sendNameButton = new Button();
+    private Label enterNameLabel = new Label();
+//    private Label nameLabel = new Label();
+    private Label sendIDButton = new Label();
     private Tile[][] board = new Tile[WIDTH][HEIGHT];
-    private Stage stage1;
-    private Button button2 = new Button();
+    private Button connectButton = new Button();
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
-    private Pane root1 = new Pane();
-    private Pane root3 = new Pane();
+    private Pane rootWithName = new Pane();
+    private Pane mainPageRoot = new Pane();
+    public boolean youTurn = false;
+    public String playerColor;
+    public PrintWriter out;
+    public BufferedReader in;
+    private String username = "";
+    public Socket playerSocket;
+    public static String ipAddr = "localhost";
+    public static int port = 10000;
+    public GetMessageService messageService;
+    private boolean gameIsStart;
+
+    private void startConnection(){
+        try {
+            System.out.println("Try to create connection");
+            playerSocket = new Socket(ipAddr,port);
+            in = new BufferedReader(new InputStreamReader(playerSocket.getInputStream()));
+            out = new PrintWriter(playerSocket.getOutputStream());
+            out.println(username);
+            out.flush();
+            messageService = new GetMessageService(this);
+            messageService.start();
+            System.out.println("Connection create");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     private Parent createFirstContent() {
-        root3.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
-        root3.getChildren().addAll(tileGroup, pieceGroup);
-
+        mainPageRoot.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
+        mainPageRoot.getChildren().addAll(tileGroup, pieceGroup);
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 Tile tile = new Tile((x + y) % 2 == 0, x, y);
@@ -64,83 +93,98 @@ public class Checkers extends Application {
             }
         }
 
-        root3.setPrefSize(800, 600);
+        mainPageRoot.setPrefSize(800, 600);
         listView.setTranslateX(540);
         listView.setTranslateY(30);
         listView.setPrefWidth(240);
-        root3.getChildren().add(listView);
+        mainPageRoot.getChildren().add(listView);
         textField.setTranslateX(560);
         textField.setTranslateY(450);
-        root3.getChildren().add(textField);
-        button.setTranslateX(710);
-        button.setTranslateY(450);
-        button.setText("Отправить");
-        root3.getChildren().add(button);
+        mainPageRoot.getChildren().add(textField);
+        sendMessageButton.setTranslateX(710);
+        sendMessageButton.setTranslateY(450);
+        sendMessageButton.setText("Отправить");
+        mainPageRoot.getChildren().add(sendMessageButton);
 
 
-        return root3;
+        return mainPageRoot;
     }
 
     private Parent firstPanel() {
-        root1.setPrefSize(400, 400);
-        textField1.setTranslateX(130);
-        textField1.setTranslateY(200);
-        button1.setTranslateX(170);
-        button1.setTranslateY(250);
-        button1.setText("Далее");
-        button1.setOnAction(this::nameAction);
-        label.setTranslateX(170);
-        label.setTranslateY(170);
-        label.setText("Введите имя");
-        button2.setTranslateX(170);
-        button2.setTranslateY(355);
-        button2.setText("Connect");
-        label2.setTranslateX(130);
-        label2.setTranslateY(300);
-        label2.setText("Введите ip и port");
-        textField2.setTranslateX(130);
-        textField2.setTranslateY(320);
-        root1.getChildren().add(label2);
-        root1.getChildren().add(textField2);
-        root1.getChildren().add(button2);
-        root1.getChildren().add(label);
-        root1.getChildren().add(textField1);
-        root1.getChildren().add(button1);
+        rootWithName.setPrefSize(400, 400);
+        nameTextField.setTranslateX(130);
+        nameTextField.setTranslateY(200);
+        sendNameButton.setTranslateX(170);
+        sendNameButton.setTranslateY(250);
+        sendNameButton.setText("Далее");
+        sendNameButton.setOnAction(this::nameAction);
+        enterNameLabel.setTranslateX(170);
+        enterNameLabel.setTranslateY(170);
+        enterNameLabel.setText("Введите имя");
+        connectButton.setTranslateX(170);
+        connectButton.setTranslateY(355);
+        connectButton.setText("Connect");
+        sendIDButton.setTranslateX(130);
+        sendIDButton.setTranslateY(300);
+        sendIDButton.setText("Введите ip и port");
+        connectionTextField.setTranslateX(130);
+        connectionTextField.setTranslateY(320);
+        rootWithName.getChildren().add(sendIDButton);
+        rootWithName.getChildren().add(connectionTextField);
+        rootWithName.getChildren().add(connectButton);
+        rootWithName.getChildren().add(enterNameLabel);
+        rootWithName.getChildren().add(nameTextField);
+        rootWithName.getChildren().add(sendNameButton);
 
-        return root1;
+        return rootWithName;
     }
 
     public void nameAction(javafx.event.ActionEvent action) {
-        String text = textField1.getText();
-        name = text;
-        System.out.println(name);
+        String text = nameTextField.getText();
+        username = text;
+        System.out.println(username);
         Stage stage = new Stage();
         stage.setScene(new Scene(createFirstContent()));
         stage.show();
         ((Node)(action.getSource())).getScene().getWindow().hide();
+        startConnection();
     }
 
 
     private MoveResult tryMove(Piece piece, int newX, int newY) {
+        System.out.println("tryMove");
+        return move(piece,newX,newY);
+
+    }
+
+    private MoveResult move(Piece piece, int newX, int newY){
+        System.out.println("NewX: "+ newX);
+        System.out.println("NewY: "+ newY);
+        System.out.println("Move action");
         if (board[newX][newY].hasPiece() || (newX + newY) % 2 == 0) {
+            System.out.println("Move1");
             return new MoveResult(MoveType.NONE);
         }
 
         int x0 = toBoard(piece.getOldX());
         int y0 = toBoard(piece.getOldY());
-
+        System.out.println("x0: "+x0);
+        System.out.println("y0: "+y0);
         if (Math.abs(newX - x0) == 1 && newY - y0 == piece.getType().moveDir) {
+            System.out.println("MoveNorm");
             return new MoveResult(MoveType.NORMAL);
         } else if (Math.abs(newX - x0) == 2 && newY - y0 == piece.getType().moveDir * 2) {
+            System.out.println("Move2");
 
             int x1 = x0 + (newX - x0) / 2;
             int y1 = y0 + (newY - y0) / 2;
 
             if (board[x1][y1].hasPiece() && board[x1][y1].getPiece().getType() != piece.getType()) {
+                System.out.println("Move kill");
                 return new MoveResult(MoveType.KILL, board[x1][y1].getPiece());
             }
         }
-
+        System.out.println("FinalMove");
         return new MoveResult(MoveType.NONE);
     }
 
@@ -163,38 +207,12 @@ public class Checkers extends Application {
         Piece piece = new Piece(type, x, y);
 
         piece.setOnMouseReleased(e -> {
-            int newX = toBoard(piece.getLayoutX());
-            int newY = toBoard(piece.getLayoutY());
-
-            MoveResult result;
-
-            if (newX < 0 || newY < 0 || newX >= WIDTH || newY >= HEIGHT) {
-                result = new MoveResult(MoveType.NONE);
-            } else {
-                result = tryMove(piece, newX, newY);
-            }
-
-            int x0 = toBoard(piece.getOldX());
-            int y0 = toBoard(piece.getOldY());
-
-            switch (result.getType()) {
-                case NONE:
-                    piece.abortMove();
-                    break;
-                case NORMAL:
-                    piece.move(newX, newY);
-                    board[x0][y0].setPiece(null);
-                    board[newX][newY].setPiece(piece);
-                    break;
-                case KILL:
-                    piece.move(newX, newY);
-                    board[x0][y0].setPiece(null);
-                    board[newX][newY].setPiece(piece);
-
-                    Piece otherPiece = result.getPiece();
-                    board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
-                    pieceGroup.getChildren().remove(otherPiece);
-                    break;
+            if(piece.type.getColor().equals(playerColor)) {
+                System.out.println(piece.getLayoutX() + " / " + piece.getLayoutY());
+                System.out.println(toBoard(piece.getLayoutX()) + " / " + toBoard(piece.getLayoutY()));
+                turnCheck(piece, type, toBoard(piece.getLayoutX()), toBoard(piece.getLayoutY()));
+            }else{
+                piece.abortMove();
             }
         });
 
@@ -203,5 +221,101 @@ public class Checkers extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private void turnCheck(Piece piece, PieceType type, int newX, int newY){
+        System.out.println("turnCheck");
+        System.out.println("Color1: " + type.getColor());
+        System.out.println("Color2: " + playerColor);
+            System.out.println(newX);
+            System.out.println(newY);
+
+            MoveResult result;
+
+            if (newX < 0 || newY < 0 || newX >= WIDTH || newY >= HEIGHT) {
+                result = new MoveResult(MoveType.NONE);
+            } else {
+
+                    result = tryMove(piece, newX, newY);
+
+
+            }
+
+            int x0 = toBoard(piece.getOldX());
+            int y0 = toBoard(piece.getOldY());
+            System.out.println("Result: " + result.getType().name());
+            switch (result.getType()) {
+                case NONE:
+                    System.out.println("abort");
+                    piece.abortMove();
+                    break;
+                case NORMAL:
+                    System.out.println("normal");
+                    sendMsg("1#" + x0 + ";" + y0 + ";" + newX + ";" + newY);
+                    piece.move(newX, newY);
+                    board[x0][y0].setPiece(null);
+                    board[newX][newY].setPiece(piece);
+                    break;
+                case KILL:
+                    System.out.println("kill");
+                    sendMsg("1#" + x0 + ";" + y0 + ";" + newX + ";" + newY);
+                    piece.move(newX, newY);
+                    board[x0][y0].setPiece(null);
+                    board[newX][newY].setPiece(piece);
+                    Piece otherPiece = result.getPiece();
+                    board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
+                    pieceGroup.getChildren().remove(otherPiece);
+                    break;
+            }
+    }
+
+    public void receiveMsg(String str) {
+        System.out.println("ReceiveMsg: " + str);
+        if(str.startsWith("0")){
+            if(str.startsWith("0Black")){
+                System.out.println("Black");
+                playerColor = "Black";;
+                youTurn = false;
+                startGame();
+            } else if(str.startsWith("0White")){
+                System.out.println("White");
+                playerColor = "White";
+                youTurn = true;
+                startGame();
+            }
+        } else {
+            if(str.startsWith("1#")){
+                String info = str.substring(2);
+                String [] data = info.split(";");
+                Piece actionPiece = getPiece(Integer.parseInt(data[0]),Integer.parseInt(data[1]));
+                System.out.println("ActionX: " + actionPiece.getOldX());
+                System.out.println("ActionY: " + actionPiece.getOldY());
+                turnCheck(actionPiece,PieceType.getType(playerColor),Integer.parseInt(data[2]),Integer.parseInt(data[3]));
+            }
+        }
+        if(str.startsWith("2")){
+            displayText(str.substring(1));
+        }
+
+    }
+
+    private void displayText(String substring) {
+    }
+
+    private Piece getPiece(int x,int y){
+        System.out.println("x: " + x);
+        System.out.println("y: " + y);
+        return (Piece)pieceGroup.getChildren().get(x+y);
+    }
+
+    private void startGame() {
+        System.out.println("GameStart");
+        gameIsStart = true;
+    }
+
+    public void sendMsg(String str){
+        System.out.println("Send: "+str);
+        out.println(str);
+        out.flush();
     }
 }
