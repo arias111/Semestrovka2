@@ -36,7 +36,7 @@ public class Server {
                                 listIter.next().send("0White");
                             }
                         }
-                    }// добавить новое соединенние в список
+                    }
                     else{
                         PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
                         printWriter.println("Переполнение");

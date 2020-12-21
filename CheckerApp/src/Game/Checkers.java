@@ -1,14 +1,12 @@
 package Game;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -23,21 +21,19 @@ public class Checkers extends Application {
     public static final int TILE_SIZE = 65;
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
-    private ListView listView = new ListView();
-    private TextField textField = new TextField();
+    private TextArea chatArea = new TextArea();
+    private TextField chatField = new TextField();
     private TextField nameTextField = new TextField();
     private TextField connectionTextField = new TextField();
     private Button sendMessageButton = new Button();
     private Button sendNameButton = new Button();
     private Label enterNameLabel = new Label();
-//    private Label nameLabel = new Label();
-    private Label sendIDButton = new Label();
+    private Label sendIdButton = new Label();
     private Tile[][] board = new Tile[WIDTH][HEIGHT];
-    private Button connectButton = new Button();
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
-    private Pane rootWithName = new Pane();
-    private Pane mainPageRoot = new Pane();
+    private Pane root1 = new Pane();
+    private Pane root3 = new Pane();
     public boolean youTurn = false;
     public String playerColor;
     public PrintWriter out;
@@ -57,6 +53,7 @@ public class Checkers extends Application {
             out = new PrintWriter(playerSocket.getOutputStream());
             out.println(username);
             out.flush();
+            sendMsg("2"+username+" connect");
             messageService = new GetMessageService(this);
             messageService.start();
             System.out.println("Connection create");
@@ -67,8 +64,8 @@ public class Checkers extends Application {
 
 
     private Parent createFirstContent() {
-        mainPageRoot.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
-        mainPageRoot.getChildren().addAll(tileGroup, pieceGroup);
+        root3.setPrefSize(WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
+        root3.getChildren().addAll(tileGroup, pieceGroup);
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
                 Tile tile = new Tile((x + y) % 2 == 0, x, y);
@@ -93,25 +90,34 @@ public class Checkers extends Application {
             }
         }
 
-        mainPageRoot.setPrefSize(800, 600);
-        listView.setTranslateX(540);
-        listView.setTranslateY(30);
-        listView.setPrefWidth(240);
-        mainPageRoot.getChildren().add(listView);
-        textField.setTranslateX(560);
-        textField.setTranslateY(450);
-        mainPageRoot.getChildren().add(textField);
+        root3.setPrefSize(800, 600);
+        chatArea.setTranslateX(540);
+        chatArea.setTranslateY(30);
+        chatArea.setPrefWidth(240);
+        root3.getChildren().add(chatArea);
+        chatField.setTranslateX(560);
+        chatField.setTranslateY(450);
+        root3.getChildren().add(chatField);
         sendMessageButton.setTranslateX(710);
         sendMessageButton.setTranslateY(450);
         sendMessageButton.setText("Отправить");
-        mainPageRoot.getChildren().add(sendMessageButton);
+        sendMessageButton.setOnAction(this::sendChatAction);
+        root3.getChildren().add(sendMessageButton);
 
 
-        return mainPageRoot;
+        return root3;
+    }
+
+    private void sendChatAction(ActionEvent actionEvent) {
+        String chatmsg = chatField.getText().trim();
+        if(!chatmsg.isEmpty()){
+            sendMsg("2"+username+": "+chatmsg);
+            chatField.setText("");
+        }
     }
 
     private Parent firstPanel() {
-        rootWithName.setPrefSize(400, 400);
+        root1.setPrefSize(400, 400);
         nameTextField.setTranslateX(130);
         nameTextField.setTranslateY(200);
         sendNameButton.setTranslateX(170);
@@ -121,22 +127,18 @@ public class Checkers extends Application {
         enterNameLabel.setTranslateX(170);
         enterNameLabel.setTranslateY(170);
         enterNameLabel.setText("Введите имя");
-        connectButton.setTranslateX(170);
-        connectButton.setTranslateY(355);
-        connectButton.setText("Connect");
-        sendIDButton.setTranslateX(130);
-        sendIDButton.setTranslateY(300);
-        sendIDButton.setText("Введите ip и port");
+        sendIdButton.setTranslateX(130);
+        sendIdButton.setTranslateY(300);
+        sendIdButton.setText("Введите ip и port");
         connectionTextField.setTranslateX(130);
         connectionTextField.setTranslateY(320);
-        rootWithName.getChildren().add(sendIDButton);
-        rootWithName.getChildren().add(connectionTextField);
-        rootWithName.getChildren().add(connectButton);
-        rootWithName.getChildren().add(enterNameLabel);
-        rootWithName.getChildren().add(nameTextField);
-        rootWithName.getChildren().add(sendNameButton);
+        root1.getChildren().add(sendIdButton);
+        root1.getChildren().add(connectionTextField);
+        root1.getChildren().add(enterNameLabel);
+        root1.getChildren().add(nameTextField);
+        root1.getChildren().add(sendNameButton);
 
-        return rootWithName;
+        return root1;
     }
 
     public void nameAction(javafx.event.ActionEvent action) {
@@ -240,7 +242,7 @@ public class Checkers extends Application {
 
 
             }
-
+            int pieceIndex = pieceGroup.getChildren().indexOf(piece);
             int x0 = toBoard(piece.getOldX());
             int y0 = toBoard(piece.getOldY());
             System.out.println("Result: " + result.getType().name());
@@ -251,20 +253,20 @@ public class Checkers extends Application {
                     break;
                 case NORMAL:
                     System.out.println("normal");
-                    sendMsg("1#" + x0 + ";" + y0 + ";" + newX + ";" + newY);
+                    sendMsg("1#" + pieceIndex + ";" + newX + ";" + newY);
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
                     break;
                 case KILL:
                     System.out.println("kill");
-                    sendMsg("1#" + x0 + ";" + y0 + ";" + newX + ";" + newY);
+                    sendMsg("1#" + pieceIndex + ";" + newX + ";" + newY);
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
                     Piece otherPiece = result.getPiece();
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
-                    pieceGroup.getChildren().remove(otherPiece);
+                    otherPiece.deletePiece();
                     break;
             }
     }
@@ -287,10 +289,10 @@ public class Checkers extends Application {
             if(str.startsWith("1#")){
                 String info = str.substring(2);
                 String [] data = info.split(";");
-                Piece actionPiece = getPiece(Integer.parseInt(data[0]),Integer.parseInt(data[1]));
+                Piece actionPiece = getPiece(Integer.parseInt(data[0]));
                 System.out.println("ActionX: " + actionPiece.getOldX());
                 System.out.println("ActionY: " + actionPiece.getOldY());
-                turnCheck(actionPiece,PieceType.getType(playerColor),Integer.parseInt(data[2]),Integer.parseInt(data[3]));
+                turnCheck(actionPiece,PieceType.getType(playerColor),Integer.parseInt(data[1]),Integer.parseInt(data[2]));
             }
         }
         if(str.startsWith("2")){
@@ -299,13 +301,13 @@ public class Checkers extends Application {
 
     }
 
-    private void displayText(String substring) {
+    private void displayText(String text) {
+        chatArea.appendText(text+"\n");
     }
 
-    private Piece getPiece(int x,int y){
-        System.out.println("x: " + x);
-        System.out.println("y: " + y);
-        return (Piece)pieceGroup.getChildren().get(x+y);
+    private Piece getPiece(int index){
+        System.out.println("x: " + index);
+        return (Piece)pieceGroup.getChildren().get(index);
     }
 
     private void startGame() {

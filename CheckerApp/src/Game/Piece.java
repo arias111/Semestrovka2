@@ -25,6 +25,12 @@ public class Piece extends StackPane {
         return oldY;
     }
 
+    public void deletePiece(){
+        this.setVisible(false);
+        this.setDisable(true);
+        this.setDisabled(true);
+    }
+
     public Piece(PieceType type, int x, int y) {
         this.type = type;
 

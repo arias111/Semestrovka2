@@ -32,12 +32,8 @@ class ServerSomthing extends Thread {
         try {
             // первое сообщение отправленное сюда - это никнейм
             word = in.readLine();
-            try {
                 System.out.println("connected: " + word);
-                out.write("2"+word +" connect" + "\n");
-                out.flush(); // flush() нужен для выталкивания оставшихся данных
                 // если такие есть, и очистки потока для дьнейших нужд
-            } catch (IOException ignored) {}
             try {
                 while (true) {
                     System.out.println("Cicle start");
