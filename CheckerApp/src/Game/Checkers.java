@@ -2,6 +2,7 @@ package Game;
 
 import javafx.application.Application;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,10 +21,12 @@ public class Checkers extends Application {
     private ListView listView = new ListView();
     private TextField textField = new TextField();
     private TextField textField1 = new TextField();
+    private TextField textField2 = new TextField();
     private Button button = new Button();
     private Button button1 = new Button();
     private Label label = new Label();
     private Label nameLabel = new Label();
+    private Label label2 = new Label();
     private Tile[][] board = new Tile[WIDTH][HEIGHT];
     private Stage stage1;
     private Button button2 = new Button();
@@ -73,14 +76,7 @@ public class Checkers extends Application {
         button.setTranslateY(450);
         button.setText("Отправить");
         root3.getChildren().add(button);
-        label.setTranslateX(350);
-        label.setTranslateY(550);
-        label.setText("Status");
-        root3.getChildren().add(label);
-        button2.setTranslateX(400);
-        button2.setTranslateY(550);
-        button2.setText("Connect");
-        root3.getChildren().add(button2);
+
 
         return root3;
     }
@@ -96,6 +92,17 @@ public class Checkers extends Application {
         label.setTranslateX(170);
         label.setTranslateY(170);
         label.setText("Введите имя");
+        button2.setTranslateX(170);
+        button2.setTranslateY(355);
+        button2.setText("Connect");
+        label2.setTranslateX(130);
+        label2.setTranslateY(300);
+        label2.setText("Введите ip и port");
+        textField2.setTranslateX(130);
+        textField2.setTranslateY(320);
+        root1.getChildren().add(label2);
+        root1.getChildren().add(textField2);
+        root1.getChildren().add(button2);
         root1.getChildren().add(label);
         root1.getChildren().add(textField1);
         root1.getChildren().add(button1);
@@ -107,10 +114,10 @@ public class Checkers extends Application {
         String text = textField1.getText();
         name = text;
         System.out.println(name);
-        this.stage1.close();
         Stage stage = new Stage();
         stage.setScene(new Scene(createFirstContent()));
         stage.show();
+        ((Node)(action.getSource())).getScene().getWindow().hide();
     }
 
 
