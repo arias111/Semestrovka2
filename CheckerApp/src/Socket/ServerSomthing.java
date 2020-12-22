@@ -5,8 +5,12 @@ import Game.PieceType;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-class ServerSomthing extends Thread {
+public class ServerSomthing extends Thread {
 
     private Socket socket;
     private BufferedReader in;
@@ -70,7 +74,7 @@ class ServerSomthing extends Thread {
      * закрытие сервера
      * прерывание себя как нити и удаление из списка нитей
      */
-    private void downService() {
+    public void downService() {
         try {
             if(!socket.isClosed()) {
                 socket.close();

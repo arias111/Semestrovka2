@@ -17,4 +17,5 @@ public enum PieceType {
         if (color.equals("Black")) return BLACK;
         else return WHITE;
     }
+
 }
