@@ -10,12 +10,12 @@ import java.util.Date;
 class ClientSomthing {
 
     private Socket socket;
-    private BufferedReader in; // поток чтения из сокета
-    private BufferedWriter out; // поток чтения в сокет
-    private BufferedReader inputUser; // поток чтения с консоли
-    private String addr; // ip адрес клиента
-    private int port; // порт соединения
-    private String nickname; // имя клиента
+    private BufferedReader in;
+    private BufferedWriter out;
+    private BufferedReader inputUser;
+    private String addr;
+    private int port;
+    private String nickname;
     private Date time;
     private String dtime;
     private SimpleDateFormat dt1;

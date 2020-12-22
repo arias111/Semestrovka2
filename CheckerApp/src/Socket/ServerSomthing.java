@@ -8,9 +8,9 @@ import java.net.Socket;
 
 class ServerSomthing extends Thread {
 
-    private Socket socket; // сокет, через который сервер общается с клиентом,
-    private BufferedReader in; // поток чтения из сокета
-    private BufferedWriter out; // поток завписи в сокет
+    private Socket socket;
+    private BufferedReader in;
+    private BufferedWriter out;
 
     /**
      * для общения с клиентом необходим сокет (адресные данные)
@@ -20,20 +20,16 @@ class ServerSomthing extends Thread {
 
     public ServerSomthing(Socket socket) throws IOException {
         this.socket = socket;
-        // если потоку ввода/вывода приведут к генерированию искдючения, оно проброситься дальше
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        // сооюбщений новому поключению
-        start(); // вызываем run()
+        start();
     }
     @Override
     public void run() {
         String word;
         try {
-            // первое сообщение отправленное сюда - это никнейм
             word = in.readLine();
                 System.out.println("connected: " + word);
-                // если такие есть, и очистки потока для дьнейших нужд
             try {
                 while (true) {
                     System.out.println("Cicle start");
@@ -41,11 +37,11 @@ class ServerSomthing extends Thread {
                     System.out.println("Server cicle: " + word);
                     if(word.equals("stop")) {
                         this.downService(); // харакири
-                        break; // если пришла пустая строка - выходим из цикла прослушки
+                        break;
                     }
                     System.out.println("Echoing: " + word);
                     for (ServerSomthing vr : Server.serverList) {
-                        vr.send(word); // отослать принятое сообщение с привязанного клиента всем остальным влючая его
+                        vr.send(word);
                     }
                 }
             } catch (NullPointerException ignored) {}

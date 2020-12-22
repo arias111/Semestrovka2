@@ -13,7 +13,7 @@ import java.util.LinkedList;
 public class Server {
 
     public static final int PORT = 10000;
-    public static LinkedList<ServerSomthing> serverList = new LinkedList<>(); // список всех нитей - экземпляров
+    public static LinkedList<ServerSomthing> serverList = new LinkedList<>();
     static private boolean gameStarted = false;
 
     public static void main(String[] args) throws IOException {
@@ -21,7 +21,6 @@ public class Server {
         System.out.println("Server Started");
         try {
             while (true) {
-                // Блокируется до возникновения нового соединения:
                 Socket socket = server.accept();
                 try {
                     if(serverList.size() <=1) {
@@ -43,8 +42,6 @@ public class Server {
                         printWriter.flush();
                     }
                 } catch (IOException e) {
-                    // Если завершится неудачей, закрывается сокет,
-                    // в противном случае, нить закроет его:
                     socket.close();
                 }
             }

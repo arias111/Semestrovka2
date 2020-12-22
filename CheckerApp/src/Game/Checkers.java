@@ -111,7 +111,7 @@ public class Checkers extends Application {
     private void sendChatAction(ActionEvent actionEvent) {
         String chatmsg = chatField.getText().trim();
         if(!chatmsg.isEmpty()){
-            sendMsg("2"+username+": "+chatmsg);
+            sendMsg(username+": "+chatmsg);
             chatField.setText("");
         }
     }
